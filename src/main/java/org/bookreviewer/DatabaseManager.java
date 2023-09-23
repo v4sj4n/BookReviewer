@@ -9,26 +9,26 @@ import java.sql.PreparedStatement;
 import java.util.Scanner;
 
 
-public class Database {
+public class DatabaseManager {
+    private Connection connection = null;
+    private String connString = "jdbc:sqlite:bookie.db";
+    static Scanner scanner = new Scanner(System.in);
+
     public void checkDb() {
-        Connection connection = null;
         try {
-            // create a database connection
-            connection = DriverManager.getConnection("jdbc:sqlite:bookie.db");
+            connection = DriverManager.getConnection(connString);
             Statement statement = connection.createStatement();
             String createTableSQL = "CREATE TABLE IF NOT EXISTS book (" + "ID INTEGER PRIMARY KEY AUTOINCREMENT," + "title TEXT NOT NULL," + "author TEXT NOT NULL," + "pages INTEGER NOT NULL," + "description TEXT," + "read INTEGER DEFAULT 0" + ")";
 
             statement.executeUpdate(createTableSQL);
 
         } catch (SQLException e) {
-            // if the error message is "out of memory",
-            // it probably means no database file is found
+
             System.err.println(e.getMessage());
         } finally {
             try {
                 if (connection != null) connection.close();
             } catch (SQLException e) {
-                // connection close failed.
                 System.err.println(e.getMessage());
             }
         }
@@ -37,9 +37,8 @@ public class Database {
 
 
     public void readBooks() {
-        Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:sqlite:bookie.db");
+            connection = DriverManager.getConnection(connString);
             Statement statement = connection.createStatement();
             ResultSet rs = statement.executeQuery("SELECT * FROM book");
             if (!rs.isBeforeFirst()) {
@@ -51,49 +50,32 @@ public class Database {
             }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-        } finally {
-            try {
-                if (connection != null) connection.close();
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-            }
         }
         System.out.println();
     }
 
-    public void addBook(String title, String author, short pages, String description, boolean read) {
-        Connection connection = null;
+    public void addBook(Book book) {
         try {
-            // create a database connection
-            connection = DriverManager.getConnection("jdbc:sqlite:bookie.db");
+            connection = DriverManager.getConnection(connString);
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO book(title, author, pages, description, read) VALUES (?, ?, ?, ?, ?)");
-            preparedStatement.setString(1, title);
-            preparedStatement.setString(2, author);
-            preparedStatement.setShort(3, pages);
-            preparedStatement.setString(4, description);
-            preparedStatement.setInt(5, read ? 1 : 0);
+            preparedStatement.setString(1, book.title);
+            preparedStatement.setString(2, book.author);
+            preparedStatement.setShort(3, book.pages);
+            preparedStatement.setString(4, book.description);
+            preparedStatement.setInt(5, book.read ? 1 : 0);
             preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-        } finally {
-            try {
-                if (connection != null) connection.close();
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-            }
         }
 
     }
 
     public void removeBook() {
-        Connection connection = null;
         try {
-            // create a database connection
-            connection = DriverManager.getConnection("jdbc:sqlite:bookie.db");
+            connection = DriverManager.getConnection(connString);
             readBooks();
             System.out.println("Enter book's id");
-            Scanner scanner = new Scanner(System.in);
             int id = scanner.nextInt();
             Statement statement = connection.createStatement();
 
@@ -101,24 +83,16 @@ public class Database {
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-        } finally {
-            try {
-                if (connection != null) connection.close();
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-            }
         }
 
     }
 
     public void bookDescriptor() {
-        Connection connection = null;
         try {
 
-            connection = DriverManager.getConnection("jdbc:sqlite:bookie.db");
+            connection = DriverManager.getConnection(connString);
             readBooks();
             System.out.println("Enter book's id");
-            Scanner scanner = new Scanner(System.in);
             int id = scanner.nextInt();
             Statement statement = connection.createStatement();
 
@@ -142,27 +116,19 @@ public class Database {
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-        } finally {
-            try {
-                if (connection != null) connection.close();
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-            }
         }
     }
 
     public void editBook() {
-        Connection connection = null;
 
         try {
 
-            connection = DriverManager.getConnection("jdbc:sqlite:bookie.db");
+            connection = DriverManager.getConnection(connString);
 
-            Scanner sc = new Scanner(System.in);
             readBooks();
 
             System.out.println("Enter the id of the book you want to edit");
-            int bookId = sc.nextInt();
+            int bookId = scanner.nextInt();
 
             Statement statement = connection.createStatement();
 
@@ -172,7 +138,8 @@ public class Database {
             for (String choice : choices) {
                 System.out.println(choice);
             }
-            int usChoice = sc.nextInt();
+            int usChoice = scanner.nextInt();
+            scanner.nextLine();
 
             if (usChoice == 0) {
                 return;
@@ -181,49 +148,44 @@ public class Database {
 
             switch (usChoice) {
                 case 1 -> {
-                    Scanner titleScanner = new Scanner(System.in);
                     System.out.println("Current value of title is " + rs.getString("title") + ", how do you want the book to be titled: ");
-                    String newTitle = titleScanner.nextLine();
+                    String newTitle = scanner.nextLine();
                     PreparedStatement preparedStatement = connection.prepareStatement("UPDATE BOOK SET title = ? WHERE ID = ?");
                     preparedStatement.setString(1, newTitle);
                     preparedStatement.setInt(2, bookId);
                     preparedStatement.executeUpdate();
                 }
                 case 2 -> {
-                    Scanner authorScanner = new Scanner(System.in);
                     System.out.println("Current value of title is " + rs.getString("author") + ", how do you want the book author to be: ");
-                    String newAuthor = authorScanner.nextLine();
+                    String newAuthor = scanner.nextLine();
                     PreparedStatement preparedStatement = connection.prepareStatement("UPDATE BOOK SET author = ? WHERE ID = ?");
                     preparedStatement.setString(1, newAuthor);
                     preparedStatement.setInt(2, bookId);
                     preparedStatement.executeUpdate();
                 }
                 case 3 -> {
-                    Scanner pagesScanner = new Scanner(System.in);
                     System.out.println("Current value of pages is " + rs.getInt("pages") + ", how many pages does the book have: ");
-                    int newPages = pagesScanner.nextInt();
+                    int newPages = scanner.nextInt();
                     PreparedStatement preparedStatement = connection.prepareStatement("UPDATE BOOK SET pages = ? WHERE ID = ?");
                     preparedStatement.setString(1, Integer.toString(newPages));
                     preparedStatement.setInt(2, bookId);
                     preparedStatement.executeUpdate();
                 }
                 case 4 -> {
-                    Scanner descriptionScanner = new Scanner(System.in);
                     System.out.println("Current value of description is " + rs.getString("description").substring(0, Math.min(rs.getString("description").length(), 50)) + "... enter your desired description: ");
-                    String newDescription = descriptionScanner.nextLine();
+                    String newDescription = scanner.nextLine();
                     PreparedStatement preparedStatement = connection.prepareStatement("UPDATE BOOK SET description = ? WHERE ID = ?");
                     preparedStatement.setString(1, newDescription);
                     preparedStatement.setInt(2, bookId);
                     preparedStatement.executeUpdate();
                 }
                 case 5 -> {
-                    Scanner readScanner = new Scanner(System.in);
-                    String readOrNo = (rs.getInt("read") == 1 ) ? "yes" : "no";
-                    System.out.println("Current value of read is " +  readOrNo + " enter yes or no if you have read it");
-                    String newRead = readScanner.nextLine();
-                    while(!(newRead.equalsIgnoreCase("yes") || newRead.equalsIgnoreCase("no"))){
-                        System.out.println("Current value of read is " +  readOrNo + " enter yes or no if you have read it");
-                        newRead = readScanner.nextLine();
+                    String readOrNo = (rs.getInt("read") == 1) ? "yes" : "no";
+                    System.out.println("Current value of read is " + readOrNo + " enter yes or no if you have read it");
+                    String newRead = scanner.nextLine();
+                    while (!(newRead.equalsIgnoreCase("yes") || newRead.equalsIgnoreCase("no"))) {
+                        System.out.println("Please enter yes / no");
+                        newRead = scanner.nextLine();
                     }
                     int newReadInt = newRead.equalsIgnoreCase("yes") ? 1 : 0;
                     PreparedStatement preparedStatement = connection.prepareStatement("UPDATE BOOK SET description = ? WHERE ID = ?");
@@ -232,19 +194,13 @@ public class Database {
                     preparedStatement.executeUpdate();
 
                 }
-                case 6 ->{
+                case 6 -> {
                     // editing everything code
                 }
             }
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-        } finally {
-            try {
-                if (connection != null) connection.close();
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-            }
         }
 
 

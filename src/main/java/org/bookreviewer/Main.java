@@ -11,7 +11,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
 
         String[] userChoices = {"0) Exit", "1) List books", "2) Add book", "3) Remove", "4) List the properties of a book", "5) Edit book"};
-        Database db = new Database();
+        DatabaseManager db = new DatabaseManager();
         db.checkDb();
 
 
@@ -57,8 +57,8 @@ public class Main {
 
                     System.out.println("Have you read it (yes/no): ");
                     boolean bRead = sc.nextLine().equalsIgnoreCase("yes");
-
-                    db.addBook(bTitle, bAuthor, bPages, bDescription, bRead);
+                    Book bookToAdd = new Book(bTitle, bAuthor, bPages, bDescription, bRead);
+                    db.addBook(bookToAdd);
                 }
                 case 3 -> db.removeBook();
                 case 4 -> db.bookDescriptor();
