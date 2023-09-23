@@ -10,7 +10,7 @@ public class Main {
 
         Scanner scanner = new Scanner(System.in);
 
-        String[] userChoices = {"0) Exit", "1) List books", "2) Add book", "3) Remove", "4) List the properties of a book", "5) Edit book"};
+        String[] userChoices = {"0) Exit", "1) List books", "2) List the information of a book", "3) Add book", "4) Remove", "5) Edit book"};
         DatabaseManager db = new DatabaseManager();
         db.checkDb();
 
@@ -39,8 +39,15 @@ public class Main {
             }
 
             switch (userInput) {
-                case 1 -> db.readBooks();
+                case 1 -> db.read();
                 case 2 -> {
+                    db.read();
+                    System.out.println("Enter book's id");
+                    int id = scanner.nextInt();
+                    scanner.nextLine();
+                    db.read(id);
+                }
+                case 3 -> {
                     Scanner sc = new Scanner(System.in);
                     System.out.println("Enter title: ");
                     String bTitle = sc.nextLine();
@@ -58,11 +65,17 @@ public class Main {
                     System.out.println("Have you read it (yes/no): ");
                     boolean bRead = sc.nextLine().equalsIgnoreCase("yes");
                     Book bookToAdd = new Book(bTitle, bAuthor, bPages, bDescription, bRead);
-                    db.addBook(bookToAdd);
+                    db.create(bookToAdd);
                 }
-                case 3 -> db.removeBook();
-                case 4 -> db.bookDescriptor();
-                case 5 -> db.editBook();
+                case 4 -> db.delete();
+                case 5 -> {
+                    db.read();
+                    System.out.println("Enter the id of the book you want to edit");
+                    int bookId = scanner.nextInt();
+                    scanner.nextLine();
+                    db.editBook(bookId);
+                }
+
 
                 default -> System.out.println("Please enter a number from 0-5.");
             }
