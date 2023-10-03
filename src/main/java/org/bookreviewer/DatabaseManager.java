@@ -1,11 +1,7 @@
 package org.bookreviewer;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.PreparedStatement;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 
@@ -44,8 +40,7 @@ public class DatabaseManager {
             }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-        }
-        finally {
+        } finally {
             try {
                 if (connection != null)
                     connection.close();
@@ -57,6 +52,35 @@ public class DatabaseManager {
 
     }
 
+    public ArrayList<Book> getAllBooksGUI() {
+        ArrayList<Book> booklist = new ArrayList<>();
+
+        try {
+            connection = DriverManager.getConnection(connString);
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery("SELECT * FROM book");
+            if (!rs.isBeforeFirst()) {
+                System.out.println("No books.\n");
+            } else {
+                while (rs.next()) {
+                    booklist.add(new Book(rs.getString("title"), rs.getString("author"), rs.getShort("pages"), rs.getString("description"), rs.getByte("read") == 1));
+                }
+                System.out.println();
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        } finally {
+            try {
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException e) {
+                // connection close failed.
+                System.err.println(e.getMessage());
+            }
+        }
+        return booklist;
+    }
+
     public void read(int id) {
         try {
             connection = DriverManager.getConnection(connString);
@@ -65,7 +89,7 @@ public class DatabaseManager {
             ResultSet rs = statement.executeQuery("SELECT * FROM book WHERE ID = " + id);
             if (!rs.isBeforeFirst()) {
                 System.out.println("No books.");
-                
+
             } else {
 
                 String title = rs.getString("title");
@@ -83,8 +107,7 @@ public class DatabaseManager {
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-        }
-        finally {
+        } finally {
             try {
                 if (connection != null)
                     connection.close();
@@ -111,19 +134,14 @@ public class DatabaseManager {
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-        }
-         finally
-        {
-          try
-          {
-            if(connection != null)
-              connection.close();
-          }
-          catch(SQLException e)
-          {
-            // connection close failed.
-            System.err.println(e.getMessage());
-          }
+        } finally {
+            try {
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException e) {
+                // connection close failed.
+                System.err.println(e.getMessage());
+            }
         }
 
     }
@@ -221,8 +239,7 @@ public class DatabaseManager {
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-        }
-        finally {
+        } finally {
             try {
                 if (connection != null)
                     connection.close();
