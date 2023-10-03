@@ -45,6 +45,15 @@ public class DatabaseManager {
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
+        finally {
+            try {
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException e) {
+                // connection close failed.
+                System.err.println(e.getMessage());
+            }
+        }
 
     }
 
@@ -56,6 +65,7 @@ public class DatabaseManager {
             ResultSet rs = statement.executeQuery("SELECT * FROM book WHERE ID = " + id);
             if (!rs.isBeforeFirst()) {
                 System.out.println("No books.");
+                
             } else {
 
                 String title = rs.getString("title");
@@ -73,6 +83,15 @@ public class DatabaseManager {
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
+        }
+        finally {
+            try {
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException e) {
+                // connection close failed.
+                System.err.println(e.getMessage());
+            }
         }
     }
 
@@ -93,24 +112,47 @@ public class DatabaseManager {
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
+         finally
+        {
+          try
+          {
+            if(connection != null)
+              connection.close();
+          }
+          catch(SQLException e)
+          {
+            // connection close failed.
+            System.err.println(e.getMessage());
+          }
+        }
 
     }
 
     public void delete() {
         try {
             connection = DriverManager.getConnection(connString);
-            read();
+            Statement statement = connection.createStatement();
+
+            read(); // Display the list of books
+
             System.out.println("Enter book's id");
             int id = scanner.nextInt();
-            Statement statement = connection.createStatement();
+            scanner.nextLine();
 
             statement.executeUpdate("DELETE FROM book WHERE ID = " + id);
             System.out.println("Book deleted successfully\n");
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
+        } finally {
+            try {
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException e) {
+                // connection close failed.
+                System.err.println(e.getMessage());
+            }
         }
-
     }
 
     public void editBook(int bookId) {
@@ -179,6 +221,15 @@ public class DatabaseManager {
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
+        }
+        finally {
+            try {
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException e) {
+                // connection close failed.
+                System.err.println(e.getMessage());
+            }
         }
 
 
